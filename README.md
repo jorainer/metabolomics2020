@@ -34,9 +34,9 @@ functionality for MS data which is independent of any data structure, and the
 `Spectra` package to represent MS spectra data independently of its storage or
 origin and provide user functionality to visualize and process this data
 efficiently, including centroiding, smoothing, combining, normalizing, comparing
-and matching of MS spectra e.g. against MS spectral database. Adapting existing
-software packages such as `xcms` to these new infrastructure packages will
-simplify their integration into complete data analysis pipelines.
+and matching of MS spectra e.g. against MS spectral databases. Adapting existing
+software packages such as `xcms` to these new infrastructure will simplify their
+integration into complete data analysis pipelines.
 
 The R for Mass Spectrometry initiative has a strong commitment to open source
 software and community contributions are highly welcome. All of its packages
