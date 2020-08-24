@@ -9,8 +9,7 @@ A scalable and flexible infrastructure for mass spectrometry data in R
 
 ## Authors
 
-Johannes Rainer, Sebastian Gibb, Michael Witting?, Thomas Naake?, ...? Laurent
-Gatto.
+Johannes Rainer, Sebastian Gibb, Laurent Gatto.
 
 
 ## Abstract
