@@ -40,3 +40,16 @@ integration into complete data analysis pipelines.
 The R for Mass Spectrometry initiative has a strong commitment to open source
 software and community contributions are highly welcome. All of its packages
 are, or will be, part of the Bioconductor project.
+
+## Poster
+
+The poster: [metabolomics-2020-poster.pdf](metabolomics-2020-poster.pdf).
+
+The poster was created with
+[posterdown](https://github.com/brentthorne/posterdown), the source code of the
+poster: [metabolomics-2020-poster.Rmd](metabolomics-2020-poster.Rmd).
+
+The full tutorial of the analysis performed in the poster is available in the
+[jorainer/SpectraTutorials](https://github.com/jorainer/SpectraTutorials) github
+repository.
+

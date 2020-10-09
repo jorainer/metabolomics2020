@@ -1,0 +1,239 @@
+---
+# PLEASE SEE THE README for in depth description github.com/brentthorne/posterdown
+# build with pagedown::chrome_print("metabolomics-2020-poster.Rmd")
+poster_height: "48in"
+poster_width: "36in"
+font_family: 'Open Sans'
+#ESSENTIALS
+title: '**_Spectra_: A scalable and flexible infrastructure for mass spectrometry data in R**'
+author:
+  - name: '**Johannes Rainer**'
+    affil: 1,*
+    main: true
+    orcid: '0000-0002-6977-7147'
+    twitter: jo_rainer
+    email: johannes.rainer@eurac.edu
+  - name: Sebastian Gibb
+    affil: 2
+    orcid: '0000-0001-7406-4443'
+  - name: Laurent Gatto
+    affil: 3
+    orcid: '0000-0002-1520-2268'
+affiliation:
+  - num: 1
+    address: Institute for Biomedicine, Eurac Research, Affiliated Institute of the University of Lübeck, 39100 Bolzano, Italy.
+  - num: 2
+    address: Department of Anaesthesiology and Intensive Care, University Medicine Greifswald, University of Greifswald, 17475 Greifswald, Germany.
+  - num: 3
+    address: Computational Biology Unit, de Duve Institute, Université catholique de Louvain, Brussels, 1200, Belgium.
+# Title Box
+# colors:
+# #cccdcc: light grey
+# #0b4545: Eurac red
+# #838b93: Eurac dark grey
+# #1e2b38: darkest grey
+titlebox_bordercol: "#cccdcc"
+title_textcol: "#d04c29f"
+author_textcol: "#212121"
+title_textsize: "80pt"
+author_textsize: "50pt"
+authorextra_textsize: "30pt"
+affiliation_textsize: "25pt"
+affiliation_textcol: '#00000080'
+caption_fontsize: "20pt"
+logoleft_name: "images/Spectra.png"
+logocenter_name: ""
+logoright_name: "images/Eurac_Research.png"
+# POSTER BODY OPTIONS
+primary_colour: '#212121'
+secondary_colour: '#d04c29f'
+accent_colour: "#313131"
+body_bgcol: "#ffffff"
+body_textsize: "45px"
+body_textcol: "#1e2b38"
+column_numbers: 2
+column_margins: "2cm"
+columnline_col: "#cccdcc"
+columnline_width: "1mm"
+columnline_style: "dashed"
+sectitle_textcol: "#d04c29"
+sectitle_textsize: "50pt"
+sectitle2_textsize: "40pt"
+sectitle_bgcol: "#ffffff"
+sectitle_bordercol: "#000000"
+sectitle_borderwidth: "0mm"
+reference_textsize: "23px"
+code_fontfamily: 'Inconsolata'
+#--Standard Options--#
+output: 
+  posterdown::posterdown_html:
+    self_contained: false
+    pandoc_args: --mathjax
+    number_sections: false
+    template: template_jo.html
+bibliography: references.bib
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  comment = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  tidy = FALSE,
+  fig.align = 'center'
+)
+```
+
+# Introduction
+
+- Easy expandability by separation of user functionality from data
+  representation and storage:
+  - `Spectra`: provides functions to handle and analyze MS data.
+  - `MsBackend`: manages and provides the MS data to `Spectra`.
+- **Use case**: match experimental MS2 spectra against public database (full version of the tutorial:
+  [https://github.com/jorainer/SpectraTutorials](https://github.com/jorainer/SpectraTutorials)).
+
+```{r libs, echo = FALSE}
+library(Spectra)
+library(MsBackendMgf)
+library(MsBackendHmdb)
+library(pheatmap)
+library(MsCoreUtils)
+```
+
+# Import from mzML files
+
+- Import data from an LC-MS/MS experiment (4 mzML files).
+- `MsBackendMzR` supports data import from mzML/mzXML/CDF files; has a small
+  memory footprint hence enabling analysis of large scale experiments.
+
+```{r mzml-import}
+fls <- dir("data/mzML", pattern = "mzML$", full.names = TRUE)
+sps_all <- Spectra(fls, backend = MsBackendMzR())
+```
+
+- Identify MS2 spectra with precursor m/z matching the [M+H]+ ion of Cystine.
+
+```{r}
+mz <- 241.0311
+sps <- filterPrecursorMz(sps_all, mz = mz + ppm(c(-mz, mz), 10))
+```
+
+- Plot first spectrum: raw spectra seem to be noisy.
+
+```{r eval = FALSE}
+plotSpectra(sps[1])
+```
+
+```{r raw-ms2, echo = FALSE}
+par(mar = c(4, 4.2, 1.4, 0.5))
+plotSpectra(sps[1])
+```
+
+- Use `filterIntensity` to remove intensities below 5% of base peak signal.
+- *Normalize* each spectrum by applying a custom function `norm_int` to each
+  spectrum with `addProcessing`.
+
+```{r filterintensity}
+low_int <- function(x) x > max(x) * 0.05
+sps <- filterIntensity(sps, intensity = low_int)
+
+norm_int <- function(x, ...) {
+    x[, "intensity"] <- 100 * x[, "intensity"] / max(x[, "intensity"])
+    x
+}
+sps <- addProcessing(sps, norm_int)
+```
+
+- Calculate pairwise similarity between spectra and visualize.
+
+```{r sim}
+cormat <- compareSpectra(sps, ppm = 20, FUN = ndotproduct)
+hm <- pheatmap(cormat, cutree_rows = 3)
+```
+
+- Spectra group into 3 clusters: related to the applied collision energy.
+
+- Proceed analysis with spectra from 20eV collision energy.
+
+```{r ce20}
+sps_ce20 <- split(sps, cutree(hm$tree_row, 3))[[1L]]
+```
+
+# Comparison against spectra from HMDB
+
+- Next step: compare spectra against *reference* spectra from
+  [HMDB](https://www.hmdb.ca).
+- `MsBackendHmdbXml` supports import from HMDB MS/MS spectra xml files.
+
+```{r hmdb-import, eval = FALSE}
+library(MsBackendHmdb)
+fls <- dir("data/hmdb_all_spectra/", full.names = TRUE, pattern = "ms_ms")
+hmdb <- Spectra(fls, source = MsBackend)
+```
+
+```{r echo = FALSE}
+load("data/hmdb.RData")
+```
+
+- Subset the ~ 500,000 spectra to those containing the precursor m/z.
+
+```{r has-mz}
+has_mz <- containsMz(hmdb, mz = mz, tolerance = 0.2)
+hmdb_with_mz <- hmdb[has_mz]
+```
+
+- Compare the experimental spectra against the database.
+
+```{r}
+res <- compareSpectra(sps_ce20, hmdb_with_mz, tolerance = 0.2)
+```
+
+- Highest similarity is `r format(max(res), digits = 3)`. Plotting best matching
+  spectra.
+
+```{r, eval = FALSE}
+idx <- which(res == max(res), arr.ind = TRUE)
+label_fun <- function(x) format(unlist(mz(x)), digits = 4)
+plotSpectraMirror(sps_ce20[idx[1]], hmdb_with_mz[idx[2]], tolerance = 0.2,
+                  labels = label_fun, labelPos = 2, labelSrt = -30)
+```
+
+```{r, mirror-plot, echo = FALSE, fig.width = 10, fig.height = 6}
+par(mar = c(3.5, 4.2, 1.4, 0.5))
+idx <- which(res == max(res), arr.ind = TRUE)
+label_fun <- function(x) format(unlist(mz(x)), digits = 4)
+plotSpectraMirror(sps_ce20[idx[1]], hmdb_with_mz[idx[2]], tolerance = 0.2,
+                  labels = label_fun, labelPos = 2, labelSrt = -30)
+```
+
+
+- Best match is with [HMDB0000192](https://hmdb.ca/metabolites/HMDB0000192)
+  (L-Cystine).
+
+
+# Export in MGF format
+
+- Add annotation and collision energy to the spectra.
+- Export to a file in [mascot generic
+format](https://www.matrixscience.com/help/data_file_help.html) (MGF) using
+`MsBackendMgf`.
+
+```{r}
+sps_ce20$hmdb_id <- hmdb_with_mz[idx[2]]$compound_id
+sps_ce20$collisionEnergy <- 20
+
+library(MsBackendMgf)
+export(sps_ce20, backend = MsBackendMgf(), file = "Cystin_ce20.mgf")
+```
+
+
+# Conclusion and Outlook
+
+- `Spectra` provides a flexible and expandable infrastructure for MS data in R.
+- Enables seamless integration of MS data from different data sources or
+  formats.
+- Allows elegant MS data handling and analysis in R.
+- Future backends will involve storage of data in SQL databases with possibility
+  of remote access and eventually access to online spectral databases.
+
+
