@@ -85,12 +85,12 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-- Easy expandability by separation of user functionality from data
-  representation and storage:
+- Data analysis/manipulation and storage functionality is separated into:
   - `Spectra`: provides functions to handle and analyze MS data.
   - `MsBackend`: manages and provides the MS data to `Spectra`.
+- This simplifies extension of the package's functionality.
 - **Use case**: match experimental MS2 spectra against public database (full version of the tutorial:
-  [https://github.com/jorainer/SpectraTutorials](https://github.com/jorainer/SpectraTutorials)).
+  [https://jorainer.github.io/SpectraTutorials/](https://jorainer.github.io/SpectraTutorials/)).
 
 ```{r libs, echo = FALSE}
 library(Spectra)
@@ -237,3 +237,4 @@ export(sps_ce20, backend = MsBackendMgf(), file = "Cystin_ce20.mgf")
   of remote access and eventually access to online spectral databases.
 
 
+_Get or cite this poster here: [https://doi.org/10.5281/zenodo.4080896](https://doi.org/10.5281/zenodo.4080896)_
