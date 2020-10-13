@@ -1,7 +1,11 @@
 # Contribution (Poster) for the Metabolomics 2020 Conference
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4080896.svg)](https://doi.org/10.5281/zenodo.4080896)
+
+
 This repository contains the contribution to the (online) conference
 [metabolomics2020](http://metabolomics2020.org/) of the metabolomics society.
+
 
 ## Title
 
@@ -43,7 +47,9 @@ are, or will be, part of the Bioconductor project.
 
 ## Poster
 
-The poster: [metabolomics-2020-poster.pdf](metabolomics-2020-poster.pdf).
+The poster: [metabolomics-2020-poster.pdf](metabolomics-2020-poster.pdf). The
+poster is also available in Zenodo - thus, to cite the poster please use
+[https://doi.org/10.5281/zenodo.4080896](https://doi.org/10.5281/zenodo.4080896).
 
 The poster was created with
 [posterdown](https://github.com/brentthorne/posterdown), the source code of the
